@@ -1,0 +1,10 @@
+target/
+*/.idea/**
+*.log
+*.xml.versionsBackup
+*.swp
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr

@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+
+  sw-oap:
+    container_name: sw-oap
+    image: apache/skywalking-oap-server:10.1.0
+    environment:
+      - TZ=Asia/Shanghai
+      - SW_STORAGE=mysql
+      - SW_JDBC_URL=jdbc:mysql://${SW_MYSQL_PATH}/skywalking?rewriteBatchedStatements=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+      - SW_DATA_SOURCE_USER=${SW_MYSQL_USER}
+      - SW_DATA_SOURCE_PASSWORD=${SW_MYSQL_PASSWORD}
+      - SW_HEALTH_CHECKER=default
+      - SW_HEALTH_CHECKER_INTERVAL_SECONDS=10
+    ports:
+      - "11800:11800"
+      - "12800:12800"
+      - "9412:9412"
+    volumes:
+      - ./plugin/mysql-connector-j-8.3.0.jar:/skywalking/oap-libs/mysql-connector-j-8.3.0.jar
+      - sw/oap/config:/skywalking/config
+    networks:
+      - sw
+    logging:
+      driver: json-file
+      options:
+        max-size: "1000M"
+        max-file: "3"
+
+  sw-ui:
+    container_name: sw-ui
+    image: apache/skywalking-ui:10.1.0
+    depends_on:
+      - sw-oap
+    environment:
+      - TZ=Asia/Shanghai
+      - SW_OAP_ADDRESS=http://sw-oap:12800
+      - SW_ZIPKIN_ADDRESS=http://sw-oap:9412
+    ports:
+      - "18080:8080"
+    networks:
+      - sw
+    logging:
+      driver: json-file
+      options:
+        max-size: "1000M"
+        max-file: "3"
+
+volumes:
+  sw:
+    driver: local
+
+
+networks:
+  sw:
+    driver: bridge
+    external: true
+    internal: true
+
